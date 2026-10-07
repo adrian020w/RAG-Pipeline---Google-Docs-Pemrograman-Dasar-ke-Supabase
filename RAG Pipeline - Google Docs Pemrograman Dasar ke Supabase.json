@@ -1,0 +1,193 @@
+{
+  "name": "RAG Pipeline - Google Docs Pemrograman Dasar ke Supabase",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "8a2a5bf1-2bbc-4605-8145-3d2ceacd8e8b",
+      "name": "Mulai (Manual Trigger)",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "1ihgNysdHB-g0Hw5kb6IGu4Xah-LzMW49",
+          "mode": "list",
+          "cachedResultName": "Pemrograman_Dasar.docx",
+          "cachedResultUrl": "https://docs.google.com/document/d/1ihgNysdHB-g0Hw5kb6IGu4Xah-LzMW49/edit?usp=drivesdk&ouid=111829767001196974390&rtpof=true&sd=true"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "id": "0f10b7c8-963c-4e75-addc-10c58cc46579",
+      "name": "Download Google Docs",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        240,
+        0
+      ],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "dZMBm41sKPebLL7m",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "tableName": {
+          "__rl": true,
+          "value": "dokumen_pemrograman",
+          "mode": "list"
+        },
+        "options": {
+          "queryName": "match_dokumen_pemrograman"
+        }
+      },
+      "id": "74cf8d0b-bbca-4b2f-b507-4c6b43164045",
+      "name": "Supabase Vector Store",
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreSupabase",
+      "typeVersion": 1.3,
+      "position": [
+        512,
+        0
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "qOEgJB2W2J1XZQZV",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "d717a9e3-8b63-4099-927c-f2bc3b32cae1",
+      "name": "Embeddings Google Gemini",
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        432,
+        272
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "6e3j98gljLXSMZAS",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {}
+      },
+      "id": "9b37879d-a69e-43a6-a1ee-6a1d2f0b520d",
+      "name": "Default Data Loader",
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "id": "b43a6cea-543c-4f3e-a949-591e75b3c988",
+      "name": "Recursive Character Text Splitter",
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        672,
+        464
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Mulai (Manual Trigger)": {
+      "main": [
+        [
+          {
+            "node": "Download Google Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download Google Docs": {
+      "main": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Supabase Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "13afc8c9-94e8-47c0-833c-9f9c286f5669",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "dc96f10ae7dc95d3c138575ba243a0a167923dbcb524841d451aadf9135d5fb3"
+  },
+  "nodeGroups": [],
+  "id": "yamVDOFkZosDgGwh",
+  "tags": []
+}
